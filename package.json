@@ -2,11 +2,12 @@
   "name": "drler-quiz",
   "version": "1.0.0",
   "private": true,
- "scripts": {
-  "build": "echo \"Статический сайт\"",
-  "predeploy": "npm run build",
-  "deploy": "gh-pages -d ."
-},
+  "scripts": {
+    "dev": "npx http-server -c-1",
+    "build": "echo \"Статический сайт\"",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d ."
+  },
   "devDependencies": {
     "gh-pages": "^6.3.0"
   }
