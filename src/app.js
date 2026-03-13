@@ -1,14 +1,23 @@
 const questions = [
   {
+    id: 'illness',
+    text: 'От чего тебе стало плохо на ночевке у Аркаши перед 10 классом?',
+    options: [
+      { value: 'a', label: 'От водки' },
+      { value: 'b', label: 'От сигарет' },
+      { value: 'v', label: 'От подика' },
+    ],
+    correct: 'b',
+  },
+  {
     id: 'driver-return',
     text: 'Как звали водителя, который вернул Аркаше его обосранный мешок с бичпакетами и несквиком?',
     options: [
       { value: 'a', label: 'Андрей' },
       { value: 'b', label: 'Сергей' },
-      { value: 'с', label: 'ИВАН' },
+      { value: 'v', label: 'Иван' },
     ],
-    // TODO: подставь нужную букву, когда будешь точно знать правильный ответ
-    correct: null,
+    correct: 'v',
   },
   {
     id: 'baikal-left',
@@ -16,19 +25,19 @@ const questions = [
     options: [
       { value: 'a', label: 'Повербанк' },
       { value: 'b', label: 'Полотенце' },
-      { value: 'с', label: 'ШТАНЫ' },
+      { value: 'v', label: 'Штаны' },
     ],
-    correct: null,
+    correct: 'v',
   },
   {
     id: 'birthday-smash',
     text: 'Что ты решила пнуть и разбить вдребезги на ночевке в честь Дня рождения Аркаши 2023?',
     options: [
       { value: 'a', label: 'Алинино еблище' },
-      { value: 'b', label: 'БОКАЛ ДЛЯ ВИНА' },
-      { value: 'с', label: 'Свою коленку' },
+      { value: 'b', label: 'Бокал для вина' },
+      { value: 'v', label: 'Свою коленку' },
     ],
-    correct: null,
+    correct: 'b',
   },
   {
     id: 'nastya-quote',
@@ -36,9 +45,9 @@ const questions = [
     options: [
       { value: 'a', label: 'кокос не вопрос' },
       { value: 'b', label: 'время 8:25 с мамой мы идём гулять' },
-      { value: 'с', label: 'МУЛАТКА-ШОКОЛАДКА' },
+      { value: 'v', label: 'Мулатка-шоколадка' },
     ],
-    correct: null,
+    correct: 'v',
   },
   {
     id: 'gift',
@@ -46,9 +55,9 @@ const questions = [
     options: [
       { value: 'a', label: 'да' },
       { value: 'b', label: 'нет' },
-      { value: 'с', label: 'водитель, остановите пожалуйста.....' },
+      { value: 'v', label: 'водитель, остановите пожалуйста.....' },
     ],
-    correct: 'с',
+    correct: 'v',
   },
 ];
 
@@ -59,7 +68,9 @@ const resultMessageEl = resultModal.querySelector('[data-result-message]');
 const resultDetailsEl = resultModal.querySelector('[data-result-details]');
 const modalClose = resultModal.querySelector('[data-close]');
 const warningMessage = document.querySelector('[data-warning]');
-
+const selectedListEl = resultModal.querySelector('[data-selected-list]');
+const googleSheetsEndpoint =
+  'https://script.google.com/macros/s/AKfycbwLXCm9VjHjdKrxP-gT7L5YgWFKPY2VotxkqBDJ6DEl0BBx_qI4NvZXM7WZEU7ieuTB/exec'
 function getCorrectAnswers() {
   return questions.reduce((acc, question) => {
     if (question.correct) {
@@ -154,12 +165,53 @@ function formatDetails({ answeredCount, score }) {
   return fragments;
 }
 
+function buildSelectedLines(answers) {
+  return questions.reduce((list, question) => {
+    const answer = answers[question.id];
+    if (!answer) {
+      return list;
+    }
+    const option = question.options.find((opt) => opt.value === answer);
+    const label = option ? option.label : answer;
+    list.push(`${question.text.replace(/\?$/, '').trim()}: ${label}`);
+    return list;
+  }, []);
+}
+
+function renderSelectedList(lines) {
+  if (!selectedListEl) {
+    return;
+  }
+  selectedListEl.innerHTML = lines
+    .map((line) => `<li>${line}</li>`)
+    .join('');
+}
+
+function sendResultsToSheet(payload) {
+  if (!googleSheetsEndpoint) {
+    return;
+  }
+  const outgoing = {
+    ...payload,
+    selected: buildSelectedLines(payload.answers || {}),
+  };
+  fetch(googleSheetsEndpoint, {
+    method: 'POST',
+    mode: 'no-cors',
+    body: JSON.stringify(outgoing),
+  }).catch((err) => {
+    console.error('Не удалось отправить ответ в Google Sheets', err);
+  });
+}
+
 function toggleModal(open, payload) {
   if (open) {
     resultMessageEl.textContent = buildVerdict(payload);
     resultDetailsEl.innerHTML = formatDetails(payload)
       .map((line) => `<li>${line}</li>`)
       .join('');
+    const selectedLines = buildSelectedLines(payload.answers || {});
+    renderSelectedList(selectedLines);
     resultModal.hidden = false;
     resultModal.setAttribute('aria-hidden', 'false');
   } else {
@@ -183,6 +235,7 @@ form.addEventListener('submit', (event) => {
     warningMessage.hidden = true;
   }
   toggleModal(true, result);
+  sendResultsToSheet(result);
 });
 
 modalClose.addEventListener('click', () => toggleModal(false));
