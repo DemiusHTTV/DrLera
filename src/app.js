@@ -173,11 +173,15 @@ form.addEventListener('submit', (event) => {
   const result = evaluateAnswers();
   const allAnswered = result.answeredCount === questions.length;
   if (!allAnswered) {
-    warningMessage.hidden = false;
-    warningMessage.textContent = `Ты ответила только на ${result.answeredCount} из ${questions.length} вопросов. Заверши викторину, чтобы увидеть попап с результатом.`;
+    if (warningMessage) {
+      warningMessage.hidden = false;
+      warningMessage.textContent = `Ты ответила только на ${result.answeredCount} из ${questions.length} вопросов. Заверши викторину, чтобы увидеть попап с результатом.`;
+    }
     return;
   }
-  warningMessage.hidden = true;
+  if (warningMessage) {
+    warningMessage.hidden = true;
+  }
   toggleModal(true, result);
 });
 
