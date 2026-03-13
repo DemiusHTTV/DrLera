@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Мини-викторина для Насти</title>
+    <link rel="stylesheet" href="src/styles/main.css" />
+  </head>
+  <body>
+    <main class="quiz-page">
+      <header class="quiz-header">
+        <p>
+          Проверь, насколько ты помнишь эти безбашенные моменты. Ответы отмечай честно,
+          но помни: если напаришься на полпути, система может грубо с тобой пообщаться.
+        </p>
+      </header>
+
+      <form id="quiz-form" class="quiz-form">
+        <div data-question-list class="question-list"></div>
+        <p data-warning class="form-warning" hidden>
+          Ответь на все вопросы — тогда появится итоговый попап.
+        </p>
+        <button type="submit" class="submit-button">Показать результат</button>
+      </form>
+    </main>
+
+    <div id="result-modal" class="modal" aria-hidden="true" hidden>
+      <div class="modal-content">
+        <button type="button" class="modal-close" data-close>Закрыть</button>
+        <h2>Результат проверки</h2>
+        <p data-result-message class="result-message"></p>
+        <ul data-result-details class="result-details"></ul>
+        <div class="qr-section">
+          <p>QR-код с итогом (замени на реальный файл).</p>
+          <img
+            data-qr-image
+            src="assets/qr-placeholder.svg"
+            alt="Место для QR-кода"
+          />
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="src/app.js"></script>
+  </body>
+</html>
